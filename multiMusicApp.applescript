@@ -12,67 +12,84 @@
 #
 #
 
-####################
-## CONFIG
-####################
+##
+# execute a command to the latest app
+#
+# @param    command One of pause, next track, previous track
+#
+on executeCommand(command)
+    global stateFile
+    global defaultApp
+    global otherApps
 
-# the file to store state information in
-set stateFile to "/tmp/multiMusicApp.plist"
+    set DEBUG to false
 
-# set the default app. can be iTunes or spotify
-set defaultApp to "iTunes"
-set otherApps to {"Spotify"}
+    if command is null then
+        set command to pause
+    end if 
 
-# How long (in seconds) to continue interacting with previous app
-# If the lastApp was updated more than this many seconds ago, disregard it and return the default app
-set ttl to (60 * 60)
+    newStateFile(stateFile)
 
-####################
-set DEBUG to false
+    set appStates to {}
+    copy otherApps to apps
+    copy defaultApp to beginning of apps
 
-newStateFile(stateFile)
-
-set appStates to {}
-copy otherApps to apps
-copy defaultApp to beginning of apps
-
-# find the current state of all apps
-repeat with checkApp in apps
-    set state to "paused"
-    if isAppRunning(checkApp) then
-        set state to (run script "tell application \"" & checkApp & "\" to get player state as string")
-    end if
-    copy state to end of appStates
-end
-
-if DEBUG then
-    set i to 0
-    set message to ""
-    repeat with thisApp in apps
-        set i to i + 1
-        set message to message & thisApp & ": " & item i of appStates & "\n"
+    # find the current state of all apps
+    repeat with checkApp in apps
+        set state to "paused"
+        if isAppRunning(checkApp) then
+            set state to (run script "tell application \"" & checkApp & "\" to get player state as string")
+        end if
+        copy state to end of appStates
     end
-    display dialog message
-end if
 
-# if something is playing pause it
-set i to 0
-set lastApp to null
-repeat with state in appStates
-    set i to i + 1
-    if state as string is "playing"
-        set lastApp to item i of apps
-        run script "tell application \"" & lastApp & "\" to pause"
+    if DEBUG then
+        set i to 0
+        set message to ""
+        repeat with thisApp in apps
+            set i to i + 1
+            set message to message & thisApp & ": " & item i of appStates & "\n"
+        end
+        display dialog message
     end if
-end
 
-# if nothing is playing, play the previous app
-if lastApp is null
-    set lastApp to getState(stateFile)
-    run script "tell application \"" & lastApp & "\" to play"
-end if
+    # if something is playing pause it
+    set i to 0
+    set lastApp to null
+    repeat with state in appStates
+        set i to i + 1
+        if state as string is "playing"
+            set lastApp to item i of apps
+            run script "tell application \"" & lastApp & "\" to " & command
+        end if
+    end
 
-storeState(stateFile, lastApp)
+    # if nothing is playing, play the previous app
+    if lastApp is null
+        set lastApp to getState(stateFile)
+        run script "tell application \"" & lastApp & "\" to play"
+    end if
+
+    storeState(stateFile, lastApp)
+end executeCommand
+
+
+##
+# define global variables from config object
+#
+# @param    config  A config object with the required properties
+#
+on setConfig(config)
+    global stateFile
+    global defaultApp
+    global otherApps
+    global ttl
+
+    set stateFile to stateFile of config
+    set defaultApp to defaultApp of config
+    set otherApps to otherApps of config
+    set ttl to ttl of config
+end setConfig
 
 
 ##
