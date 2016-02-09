@@ -1,7 +1,7 @@
 ##
-# @author    ethan@3thirty.net
-# @date        2016-02-05
-# @version    1.0
+# @author       ethan@3thirty.net
+# @date         2016-02-08
+# @version      1.0
 #
 # Script to play or pause from the music app (iTunes or Spotify) that is currently being used.
 #
@@ -21,6 +21,7 @@ set stateFile to "/tmp/multiMusicApp.plist"
 
 # set the default app. can be iTunes or spotify
 set defaultApp to "iTunes"
+set otherApps to {"Spotify"}
 
 # How long (in seconds) to continue interacting with previous app
 # If the lastApp was updated more than this many seconds ago, disregard it and return the default app
@@ -31,40 +32,45 @@ set DEBUG to false
 
 newStateFile(stateFile)
 
-tell application "Spotify"
-    set spotifyState to get player state as string
-end tell
+set appStates to {}
+copy otherApps to apps
+copy defaultApp to beginning of apps
 
-tell application "iTunes"
-    set itunesState to get player state as string
-end tell
+# find the current state of all apps
+repeat with checkApp in apps
+    set state to "paused"
+    if isAppRunning(checkApp) then
+        set state to (run script "tell application \"" & checkApp & "\" to get player state as string")
+    end if
+    copy state to end of appStates
+end
 
 if DEBUG then
-    display dialog "itunes: " & itunesState & "
-spotify: " & spotifyState
+    set i to 0
+    set message to ""
+    repeat with thisApp in apps
+        set i to i + 1
+        set message to message & thisApp & ": " & item i of appStates & "\n"
+    end
+    display dialog message
 end if
 
-if spotifyState is "playing" and itunesState is "playing" then
-    tell application "Spotify" to pause
-    tell application "iTunes" to pause
-else if spotifyState is "playing" then
-    # spotify is playing, so pause it
-    set lastApp to "Spotify"
-    tell application "Spotify" to pause
-else if itunesState is "playing" then
-    # itunes is playing, so pause it
-    set lastApp to "iTunes"
-    tell application "iTunes" to pause
-else
-    # nothing is playing
+# if something is playing pause it
+set i to 0
+set lastApp to null
+repeat with state in appStates
+    set i to i + 1
+    if state as string is "playing"
+        set lastApp to item i of apps
+        run script "tell application \"" & lastApp & "\" to pause"
+    end if
+end
+
+# if nothing is playing, play the previous app
+if lastApp is null
     set lastApp to getState(stateFile)
     run script "tell application \"" & lastApp & "\" to play"
 end if
-
-if DEBUG then
-    display dialog "writing to statefile: " & lastApp
-end if
-
 
 storeState(stateFile, lastApp)
 
@@ -164,3 +170,16 @@ on newStateFile(stateFile)
     write defaultPlist to stateFile starting at eof
     close access stateFile
 end newStateFile
+
+##
+# Check if the named app is currently running 
+#
+# @param    checkApp    The app name to heck for
+#
+# @return   true if the app is currently running, false otherwise
+#
+on isAppRunning(checkApp)
+    tell application "System Events"
+        return (name of processes) contains checkApp
+    end tell
+end appIsRunning
