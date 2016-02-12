@@ -8,5 +8,5 @@ set core to load script coreFilePath as alias
 
 tell core
     setConfig(config)
-    executeCommand("next track", true)
+    executeCommand("pause", false)
 end tell

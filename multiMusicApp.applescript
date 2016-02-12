@@ -17,16 +17,13 @@
 #
 # @param    command One of pause, next track, previous track
 #
-on executeCommand(command)
+on executeCommand(command, forcePlay)
     global stateFile
     global defaultApp
     global otherApps
+    global DEBUG
 
     set DEBUG to false
-
-    if command is null then
-        set command to pause
-    end if 
 
     newStateFile(stateFile)
 
@@ -67,7 +64,10 @@ on executeCommand(command)
     # if nothing is playing, play the previous app
     if lastApp is null
         set lastApp to getState(stateFile)
-        run script "tell application \"" & lastApp & "\" to play"
+    
+        if forcePlay is true
+            run script "tell application \"" & lastApp & "\" to play"
+        end if
     end if
 
     storeState(stateFile, lastApp)
