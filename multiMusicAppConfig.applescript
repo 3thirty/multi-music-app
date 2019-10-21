@@ -1,9 +1,9 @@
 ##
 # @author       ethan@3thirty.net
-# @date         2016-02-08
-# @version      1.0
+# @date         2019-10-21
+# @version      1.0.1
 #
-# Script to play or pause from the music app (iTunes or Spotify) that is currently being used.
+# Script to play or pause from the music app (Apple Music or Spotify) that is currently being used.
 #
 # This allows you to continue to play/pause within the "current" app (via this
 # script). To tell this script that you have switched app, just manually start
@@ -22,7 +22,7 @@ property stateFile: "/tmp/multiMusicApp.plist"
 
 # set the default app. This is the app that will start playing if no previous app
 # can be identified, or if it's been more than the TTL time since another app was used
-property defaultApp: "iTunes"
+property defaultApp: "Music"
 
 ## set other music apps here, comma separated
 property otherApps: {"Spotify"}

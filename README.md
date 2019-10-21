@@ -1,5 +1,5 @@
 # multi-music-app
-These scripts allow you to play, pause, go to previous and next track in whichever music app you are currently (or were last) listening in. By default, this will check for iTunes and Spotify, but other music playing apps can be easily supported.
+These scripts allow you to play, pause, go to previous and next track in whichever music app you are currently (or were last) listening in. By default, this will check for Music (formerly iTunes) and Spotify, but other music playing apps can be easily supported.
 
 ### Using in Alfred
 This was primarily designed to be called from an Alfred workflow, such a workflow is provided under the alfred directory. To run in Alfred, you can just download the workflow file and load into alfred. See https://www.alfredapp.com/help/workflows/ for more on adding workflows
@@ -33,7 +33,7 @@ property stateFile: "/tmp/multiMusicApp.plist"
 
 # set the default app. This is the app that will start playing if no previous app
 # can be identified, or if it's been more than the TTL time since another app was used
-property defaultApp: "iTunes"
+property defaultApp: "Music"
 
 # set other music apps here, comma separated
 property otherApps: {"Spotify"}
